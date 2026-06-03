@@ -1,4 +1,4 @@
-import axios from "axios";
+import apiClient from "./apiClient";
 
 export interface LoginRequest {
   email: string;
@@ -16,8 +16,8 @@ export interface LoginResponse {
 }
 
 export async function login(data: LoginRequest): Promise<LoginResponse> {
-  const response = await axios.post<LoginResponse>(
-    `/api/auth/login`,
+  const response = await apiClient.post<LoginResponse>(
+    "/api/auth/login",
     data
   );
 

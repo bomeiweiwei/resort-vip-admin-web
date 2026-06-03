@@ -1,4 +1,4 @@
-import axios from "axios";
+import apiClient from "./apiClient";
 
 export interface Employee {
   employee_id: number;
@@ -14,15 +14,8 @@ export interface Employee {
 }
 
 export async function getEmployees(): Promise<Employee[]> {
-  const token = localStorage.getItem("access_token");
-
-  const response = await axios.get<Employee[]>(
-    `/api/employees`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+  const response = await apiClient.get<Employee[]>(
+    "/api/employees"
   );
 
   return response.data;
