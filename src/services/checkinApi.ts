@@ -56,3 +56,11 @@ export async function createCheckIn(data: CreateCheckInRequest) {
   const response = await apiClient.post("/api/checkins", data);
   return response.data;
 }
+
+export const generateRecommendation = async (customerId: string) => {
+    const response = await apiClient.post(
+        `/api/checkins/${customerId}/generate-recommendation`
+    );
+
+    return response.data;
+};

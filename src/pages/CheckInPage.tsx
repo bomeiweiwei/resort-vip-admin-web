@@ -20,7 +20,8 @@ import dayjs from "dayjs";
 import {
     createCheckIn,
     getRoomTypes,
-    getRooms,
+    getRooms, 
+    generateRecommendation
 } from "../services/checkinApi";
 import type { Room, RoomType } from "../services/checkinApi";
 
@@ -30,6 +31,9 @@ function CheckInPage() {
 
     const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
     const [rooms, setRooms] = useState<Room[]>([]);
+
+    const [submitting, setSubmitting] = useState(false);
+    const [generating, setGenerating] = useState(false);
 
     useEffect(() => {
         loadRoomTypes();
@@ -49,9 +53,11 @@ function CheckInPage() {
 
     const handleSubmit = async () => {
         try {
+            setSubmitting(true);
+
             const values = await form.validateFields();
 
-            await createCheckIn({
+            const checkInResult = await createCheckIn({
                 ...values,
                 birth_date: values.birth_date
                     ? dayjs(values.birth_date).format("YYYY-MM-DD")
@@ -62,10 +68,50 @@ function CheckInPage() {
             });
 
             messageApi.success("入住資料新增成功");
+
             form.resetFields();
             setRooms([]);
+
+            const customerId =
+                checkInResult?.data?.customer_id ??
+                checkInResult?.customer_id ??
+                values.customer_id;
+
+            if (!customerId) {
+                messageApi.warning("入住成功，但找不到 customer_id，無法產生 AI 推薦");
+                return;
+            }
+
+            try {
+                setGenerating(true);
+
+                messageApi.loading({
+                    content: "AI 行程產生中，請稍候...",
+                    key: "generateRecommendation",
+                    duration: 0,
+                });
+
+                await generateRecommendation(customerId);
+
+                messageApi.success({
+                    content: "AI 行程推薦產生成功",
+                    key: "generateRecommendation",
+                });
+            } catch (error: any) {
+                console.error(error);
+
+                messageApi.warning({
+                    content: "AI 行程可能仍在背景產生中，請稍後查看推薦結果",
+                    key: "generateRecommendation",
+                    duration: 5,
+                });
+            } finally {
+                setGenerating(false);
+            }
         } catch (error: any) {
             messageApi.error(error.response?.data?.detail || "入住資料新增失敗");
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -291,8 +337,12 @@ function CheckInPage() {
 
                     <Divider />
 
-                    <Button type="primary" onClick={handleSubmit}>
-                        送出入住資料
+                    <Button
+                        type="primary"
+                        onClick={handleSubmit}
+                        loading={submitting || generating}
+                    >
+                        {generating ? "AI 行程產生中..." : "送出入住資料"}
                     </Button>
                 </Form>
             </Card>
