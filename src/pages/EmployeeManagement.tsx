@@ -1,17 +1,10 @@
 import { useEffect, useState } from "react";
-import { Button, Form, Input, Layout, Menu, Modal, Select, Space, Table, Tag, message  } from "antd";
+import { Button, Form, Input, Modal, Select, Space, Table, Tag, message  } from "antd";
 import { createEmployee, getEmployees } from "../services/employeeApi";
 import type { CreateEmployeeRequest, Employee } from "../services/employeeApi";
 
-const { Header, Content } = Layout;
-
-interface EmployeeManagementProps {
-  onLogout: () => void;
-}
-
-function EmployeeManagement({ onLogout }: EmployeeManagementProps) {
+function EmployeeManagement() {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const employeeName = localStorage.getItem("employee_name");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm<CreateEmployeeRequest>();
@@ -78,113 +71,87 @@ function EmployeeManagement({ onLogout }: EmployeeManagementProps) {
   return (
     <>
       {contextHolder}
-      
-      <Layout>
-        <Header className="top-header">
-          <div className="brand">Resort VIP Admin</div>
 
-          <Menu
-            theme="dark"
-            mode="horizontal"
-            selectedKeys={["employees"]}
-            items={[
-              {
-                key: "employees",
-                label: "員工管理",
-              },
-            ]}
-          />
+      <h2>員工管理</h2>
 
-          <div className="user-info">
-            {employeeName}
-            <Button size="small" onClick={onLogout}>
-              登出
-            </Button>
-          </div>
-        </Header>
+      <Space className="toolbar">
+        <Button type="primary" onClick={() => setIsModalOpen(true)}>
+          新增員工
+        </Button>
+        <Button onClick={loadEmployees}>重新整理</Button>
+      </Space>
 
-        <Content className="page-content">
-          <h2>員工管理</h2>
+      <Table
+        rowKey="employee_id"
+        columns={columns}
+        dataSource={employees}
+      />
 
-          <Space className="toolbar">
-            <Button type="primary" onClick={() => setIsModalOpen(true)}>
-              新增員工
-            </Button>
-            <Button onClick={loadEmployees}>重新整理</Button>
-          </Space>
-
-          <Table
-            rowKey="employee_id"
-            columns={columns}
-            dataSource={employees}
-          />
-
-          <Modal
-            title="新增員工"
-            open={isModalOpen}
-            onOk={handleCreateEmployee}
-            onCancel={() => {
-              form.resetFields();
-              setIsModalOpen(false);
-            }}
-            okText="新增"
-            cancelText="取消"
+      <Modal
+        title="新增員工"
+        open={isModalOpen}
+        onOk={handleCreateEmployee}
+        onCancel={() => {
+          form.resetFields();
+          setIsModalOpen(false);
+        }}
+        okText="新增"
+        cancelText="取消"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="員工編號"
+            name="employee_code"
+            rules={[{ required: true, message: "請輸入員工編號" }]}
           >
-            <Form form={form} layout="vertical">
-              <Form.Item
-                label="員工編號"
-                name="employee_code"
-                rules={[{ required: true, message: "請輸入員工編號" }]}
-              >
-                <Input placeholder="EMP002" />
-              </Form.Item>
+            <Input placeholder="EMP002" />
+          </Form.Item>
 
-              <Form.Item
-                label="姓名"
-                name="employee_name"
-                rules={[{ required: true, message: "請輸入姓名" }]}
-              >
-                <Input placeholder="王小明" />
-              </Form.Item>
+          <Form.Item
+            label="姓名"
+            name="employee_name"
+            rules={[{ required: true, message: "請輸入姓名" }]}
+          >
+            <Input placeholder="王小明" />
+          </Form.Item>
 
-              <Form.Item
-                label="Email"
-                name="email"
-                rules={[
-                  { required: true, message: "請輸入 Email" },
-                  { type: "email", message: "Email 格式不正確" },
-                ]}
-              >
-                <Input placeholder="user@resort.com" />
-              </Form.Item>
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[
+              { required: true, message: "請輸入 Email" },
+              { type: "email", message: "Email 格式不正確" },
+            ]}
+          >
+            <Input placeholder="user@resort.com" />
+          </Form.Item>
 
-              <Form.Item
-                label="密碼"
-                name="password"
-                rules={[{ required: true, message: "請輸入密碼" }]}
-              >
-                <Input.Password placeholder="請輸入密碼" />
-              </Form.Item>
+          <Form.Item
+            label="密碼"
+            name="password"
+            rules={[{ required: true, message: "請輸入密碼" }]}
+          >
+            <Input.Password placeholder="請輸入密碼" />
+          </Form.Item>
 
-              <Form.Item
-                label="角色"
-                name="role"
-                rules={[{ required: true, message: "請選擇角色" }]}
-              >
-                <Select placeholder="請選擇角色">
-                  <Select.Option value="Admin">Admin</Select.Option>
-                  <Select.Option value="Manager">Manager</Select.Option>
-                  <Select.Option value="Staff">Staff</Select.Option>
-                </Select>
-              </Form.Item>
+          <Form.Item
+            label="角色"
+            name="role"
+            rules={[{ required: true, message: "請選擇角色" }]}
+          >
+            <Select placeholder="請選擇角色">
+              <Select.Option value="Admin">Admin</Select.Option>
+              <Select.Option value="Manager">Manager</Select.Option>
+              <Select.Option value="Staff">Staff</Select.Option>
+            </Select>
+          </Form.Item>
 
-              <Form.Item label="部門" name="department">
-                <Input placeholder="資訊部" />
-              </Form.Item>
-            </Form>
-          </Modal>
-        </Content>
-      </Layout>
+          <Form.Item label="部門" name="department">
+            <Input placeholder="資訊部" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
     </>
   );
 }
