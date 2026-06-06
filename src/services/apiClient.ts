@@ -29,6 +29,7 @@ apiClient.interceptors.response.use(
       localStorage.removeItem("access_token");
       localStorage.removeItem("employee_name");
       localStorage.removeItem("role");
+      window.location.reload();
     }
 
     return Promise.reject(error);

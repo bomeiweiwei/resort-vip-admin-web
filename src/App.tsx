@@ -4,6 +4,7 @@ import { Button, Layout, Menu } from "antd";
 import LoginPage from "./pages/LoginPage";
 import EmployeeManagement from "./pages/EmployeeManagement";
 import CheckInPage from "./pages/CheckInPage";
+import ItineraryRecommendationPage from "./pages/ItineraryRecommendationPage";
 
 const { Header, Content } = Layout;
 
@@ -47,6 +48,10 @@ function App() {
               key: "checkin",
               label: "辦理入住",
             },
+            {
+              key: "itinerary",
+              label: "推薦行程",
+            },
           ]}
         />
 
@@ -61,6 +66,7 @@ function App() {
       <Content className="page-content">
         {currentPage === "employees" && <EmployeeManagement />}
         {currentPage === "checkin" && <CheckInPage />}
+        {currentPage === "itinerary" && <ItineraryRecommendationPage />}
       </Content>
     </Layout>
   );
