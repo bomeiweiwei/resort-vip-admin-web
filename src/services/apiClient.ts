@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: "",
+  baseURL: import.meta.env.VITE_PROXY_API,
   timeout: 10000,
 });
 
