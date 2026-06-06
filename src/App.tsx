@@ -5,6 +5,7 @@ import LoginPage from "./pages/LoginPage";
 import EmployeeManagement from "./pages/EmployeeManagement";
 import CheckInPage from "./pages/CheckInPage";
 import ItineraryRecommendationPage from "./pages/ItineraryRecommendationPage";
+import CustomerRequestPage from "./pages/CustomerRequestPage";
 
 const { Header, Content } = Layout;
 
@@ -52,6 +53,10 @@ function App() {
               key: "itinerary",
               label: "推薦行程",
             },
+            {
+              key: "customer-request",
+              label: "顧客需求",
+            },
           ]}
         />
 
@@ -67,6 +72,7 @@ function App() {
         {currentPage === "employees" && <EmployeeManagement />}
         {currentPage === "checkin" && <CheckInPage />}
         {currentPage === "itinerary" && <ItineraryRecommendationPage />}
+        {currentPage === "customer-request" && <CustomerRequestPage />}
       </Content>
     </Layout>
   );
