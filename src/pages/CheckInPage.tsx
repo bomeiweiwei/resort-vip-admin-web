@@ -12,8 +12,11 @@ import {
     Space,
     message,
     Row,
-    Col
+    Col,
+    Typography,
+    Modal
 } from "antd";
+import { QRCodeSVG } from "qrcode.react";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 
@@ -25,6 +28,12 @@ import {
 } from "../services/checkinApi";
 import type { Room, RoomType } from "../services/checkinApi";
 
+type VipInfo = {
+    vip_login_account: string;
+    vip_initial_password: string;
+    vip_login_url: string;
+};
+
 function CheckInPage() {
     const [form] = Form.useForm();
     const [messageApi, contextHolder] = message.useMessage();
@@ -34,6 +43,9 @@ function CheckInPage() {
 
     const [submitting, setSubmitting] = useState(false);
     const [generating, setGenerating] = useState(false);
+
+    const [vipInfo, setVipInfo] = useState<VipInfo | null>(null);
+    const [vipModalOpen, setVipModalOpen] = useState(false);
 
     useEffect(() => {
         loadRoomTypes();
@@ -49,6 +61,10 @@ function CheckInPage() {
 
         const result = await getRooms(roomTypeId);
         setRooms(result);
+    };
+
+    const getCheckInData = (result: any) => {
+        return result?.data ?? result;
     };
 
     const handleSubmit = async () => {
@@ -67,14 +83,32 @@ function CheckInPage() {
                 notes: values.notes ?? [],
             });
 
+            // console.log("checkInResult =", checkInResult);
+
+            const checkInData = getCheckInData(checkInResult);
+
+            // console.log("checkInData =", checkInData);
+
             messageApi.success("入住資料新增成功");
+
+            if (
+                checkInData?.vip_login_account &&
+                checkInData?.vip_initial_password &&
+                checkInData?.vip_login_url
+            ) {
+                setVipInfo({
+                    vip_login_account: checkInData.vip_login_account,
+                    vip_initial_password: checkInData.vip_initial_password,
+                    vip_login_url: checkInData.vip_login_url,
+                });
+                setVipModalOpen(true);
+            }
 
             form.resetFields();
             setRooms([]);
 
             const customerId =
-                checkInResult?.data?.customer_id ??
-                checkInResult?.customer_id ??
+                checkInData?.customer_id ??
                 values.customer_id;
 
             if (!customerId) {
@@ -82,32 +116,33 @@ function CheckInPage() {
                 return;
             }
 
-            try {
-                setGenerating(true);
+            setGenerating(true);
 
-                messageApi.loading({
-                    content: "AI 行程產生中，請稍候...",
-                    key: "generateRecommendation",
-                    duration: 0,
+            messageApi.loading({
+                content: "AI 行程產生中，請稍候...",
+                key: "generateRecommendation",
+                duration: 0,
+            });
+
+            generateRecommendation(customerId)
+                .then(() => {
+                    messageApi.success({
+                        content: "AI 行程推薦產生成功",
+                        key: "generateRecommendation",
+                    });
+                })
+                .catch((error: any) => {
+                    console.error(error);
+
+                    messageApi.warning({
+                        content: "AI 行程可能仍在背景產生中，請稍後查看推薦結果",
+                        key: "generateRecommendation",
+                        duration: 5,
+                    });
+                })
+                .finally(() => {
+                    setGenerating(false);
                 });
-
-                await generateRecommendation(customerId);
-
-                messageApi.success({
-                    content: "AI 行程推薦產生成功",
-                    key: "generateRecommendation",
-                });
-            } catch (error: any) {
-                console.error(error);
-
-                messageApi.warning({
-                    content: "AI 行程可能仍在背景產生中，請稍後查看推薦結果",
-                    key: "generateRecommendation",
-                    duration: 5,
-                });
-            } finally {
-                setGenerating(false);
-            }
         } catch (error: any) {
             messageApi.error(error.response?.data?.detail || "入住資料新增失敗");
         } finally {
@@ -340,12 +375,60 @@ function CheckInPage() {
                     <Button
                         type="primary"
                         onClick={handleSubmit}
-                        loading={submitting || generating}
+                        loading={submitting}
                     >
-                        {generating ? "AI 行程產生中..." : "送出入住資料"}
+                        {submitting ? "送出中..." : "送出入住資料"}
                     </Button>
                 </Form>
             </Card>
+
+            <Modal
+                title="VIP 帳號建立成功"
+                open={vipModalOpen}
+                onOk={() => setVipModalOpen(false)}
+                onCancel={() => setVipModalOpen(false)}
+                okText="完成"
+                cancelButtonProps={{ style: { display: "none" } }}
+            >
+                {vipInfo && (
+                    <Space orientation="vertical" size="middle" style={{ width: "100%" }}>
+                        <Typography.Text>
+                            帳號：<Typography.Text strong>{vipInfo.vip_login_account}</Typography.Text>
+                        </Typography.Text>
+
+                        <Typography.Text>
+                            初始密碼：<Typography.Text strong>{vipInfo.vip_initial_password}</Typography.Text>
+                        </Typography.Text>
+
+                        <Typography.Text>
+                            前台登入網址：{" "}
+                            <Typography.Text copyable>{vipInfo.vip_login_url}</Typography.Text>
+                        </Typography.Text>
+
+                        <div
+                            style={{
+                                background: "#fff",
+                                padding: 16,
+                                display: "inline-block",
+                                borderRadius: 8,
+                            }}
+                        >
+                            <QRCodeSVG
+                                value={JSON.stringify({
+                                    login_url: vipInfo.vip_login_url,
+                                    account: vipInfo.vip_login_account,
+                                    password: vipInfo.vip_initial_password,
+                                })}
+                                size={180}
+                            />
+                        </div>
+
+                        <Typography.Text type="secondary">
+                            請旅客掃描 QRCode，前往 VIP 前台登入。
+                        </Typography.Text>
+                    </Space>
+                )}
+            </Modal>
         </>
     );
 }
