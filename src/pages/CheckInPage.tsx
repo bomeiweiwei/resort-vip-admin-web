@@ -42,7 +42,7 @@ function CheckInPage() {
     const [rooms, setRooms] = useState<Room[]>([]);
 
     const [submitting, setSubmitting] = useState(false);
-    const [generating, setGenerating] = useState(false);
+    const [, setGenerating] = useState(false);
 
     const [vipInfo, setVipInfo] = useState<VipInfo | null>(null);
     const [vipModalOpen, setVipModalOpen] = useState(false);
