@@ -6,7 +6,6 @@ import {
     type ItineraryRecommendation,
     type ItinerarySchedule,
 } from "../services/recommendApi";
-import "../App.css";
 
 function ItineraryRecommendationPage() {
     const [recommendations, setRecommendations] = useState<
