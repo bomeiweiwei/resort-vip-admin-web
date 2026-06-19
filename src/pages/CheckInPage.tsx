@@ -32,6 +32,7 @@ type VipInfo = {
     vip_login_account: string;
     vip_initial_password: string;
     vip_login_url: string;
+    vip_magic_login_url: string;
 };
 
 function CheckInPage() {
@@ -94,12 +95,14 @@ function CheckInPage() {
             if (
                 checkInData?.vip_login_account &&
                 checkInData?.vip_initial_password &&
-                checkInData?.vip_login_url
+                checkInData?.vip_login_url &&
+                checkInData?.vip_magic_login_url
             ) {
                 setVipInfo({
                     vip_login_account: checkInData.vip_login_account,
                     vip_initial_password: checkInData.vip_initial_password,
                     vip_login_url: checkInData.vip_login_url,
+                    vip_magic_login_url: checkInData.vip_magic_login_url,
                 });
                 setVipModalOpen(true);
             }
@@ -211,6 +214,7 @@ function CheckInPage() {
                                 <Select.Option value="TW">台灣</Select.Option>
                                 <Select.Option value="JP">日本</Select.Option>
                                 <Select.Option value="US">美國</Select.Option>
+                                <Select.Option value="KR">韓國</Select.Option>
                             </Select>
                         </Form.Item>
 
@@ -400,10 +404,10 @@ function CheckInPage() {
                             初始密碼：<Typography.Text strong>{vipInfo.vip_initial_password}</Typography.Text>
                         </Typography.Text>
 
-                        <Typography.Text>
+                        {/* <Typography.Text>
                             前台登入網址：{" "}
-                            <Typography.Text copyable>{vipInfo.vip_login_url}</Typography.Text>
-                        </Typography.Text>
+                            <Typography.Text copyable>{vipInfo.vip_magic_login_url}</Typography.Text>
+                        </Typography.Text> */}
 
                         <div
                             style={{
@@ -414,11 +418,7 @@ function CheckInPage() {
                             }}
                         >
                             <QRCodeSVG
-                                value={JSON.stringify({
-                                    login_url: vipInfo.vip_login_url,
-                                    account: vipInfo.vip_login_account,
-                                    password: vipInfo.vip_initial_password,
-                                })}
+                                value={vipInfo.vip_magic_login_url}
                                 size={180}
                             />
                         </div>
