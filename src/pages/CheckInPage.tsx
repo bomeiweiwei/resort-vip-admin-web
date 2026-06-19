@@ -214,6 +214,7 @@ function CheckInPage() {
                                 <Select.Option value="TW">台灣</Select.Option>
                                 <Select.Option value="JP">日本</Select.Option>
                                 <Select.Option value="US">美國</Select.Option>
+                                <Select.Option value="KR">韓國</Select.Option>
                             </Select>
                         </Form.Item>
 
